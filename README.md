@@ -5,7 +5,8 @@
 
 ![Asset](https://img.shields.io/badge/Asset-XAU%2FUSD%20(Gold)-ffd700?style=for-the-badge)
 ![Timeframe](https://img.shields.io/badge/Timeframe-M15-blue?style=for-the-badge)
-![Win Rate](https://img.shields.io/badge/Win%20Rate-54.8%25-2ca02c?style=for-the-badge)
+![Net Profit](https://img.shields.io/badge/Net%20Profit-%2B27.00%20R%20(%2B1%2C684%20Pips)-2ca02c?style=for-the-badge)
+![Win Rate](https://img.shields.io/badge/Win%20Rate-54.8%25-green?style=for-the-badge)
 ![Profit Factor](https://img.shields.io/badge/Profit%20Factor-2.42-success?style=for-the-badge)
 ![Risk:Reward](https://img.shields.io/badge/R%3AR-1%3A2.0-orange?style=for-the-badge)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)
@@ -25,7 +26,8 @@
 | **Menang / Kalah** | **23 Win / 19 Loss** |
 | **Win Rate** | **54.8%** (naik ke **60.0%** pada $\Delta Asia \ge \$10$) |
 | **Risk to Reward (R:R)** | **1 : 2.0** (+2.0 R / -1.0 R) |
-| **Net Profit** | **+27.00 R** (Gross Profit: +46.0 R / Loss: -19.0 R) |
+| **Total Keuntungan Bersih (Net Profit)** | **+27.00 R** (**+1.684 Pips** / +168.40 USD poin) |
+| **Gross Profit / Loss** | **+46.00 R** (+2.671 Pips) / **-19.00 R** (-987 Pips) |
 | **Profit Factor (PF)** | **2.42** |
 | **Max Drawdown** | **-4.00 R** |
 | **Waktu Pemasangan Order** | **Pukul 14.30 WIB** |
@@ -68,10 +70,20 @@ Evaluasi pada 50 sesi perdagangan data historis M15:
 | **Order Unfilled** | 8 Hari (16.0%) |
 | **Menang / Kalah** | 23 Win / 19 Loss |
 | **Win Rate** | **54.8%** |
-| **Risk to Reward** | **1 : 2.0** |
-| **Net Profit** | **+27.00 R** |
+| **Risk to Reward** | **1 : 2.0** (+2.0 R / -1.0 R) |
+| **Total Keuntungan Bersih (Net Profit)** | **+27.00 R** (**+1.684 Pips** / +168.40 USD poin) |
+| **Gross Profit** | **+46.00 R** (+2.671 Pips / +267.10 USD) |
+| **Gross Loss** | **-19.00 R** (-987 Pips / -98.70 USD) |
 | **Profit Factor** | **2.42** |
 | **Max Drawdown** | **-4.00 R** |
+
+### Proyeksi Pertumbuhan Modal (Risiko 1% per Trade)
+
+| Modal Awal Akun | Risiko per Trade (1%) | Akumulasi Laba Bersih (+27.00 R) | Saldo Akhir | Pertumbuhan (ROI) |
+| :---: | :---: | :---: | :---: | :---: |
+| **$10,000 USD** | $100 USD | **+$2,700 USD** | $12,700 USD | **+27.0%** |
+| **$5,000 USD** | $50 USD | **+$1,350 USD** | $6,350 USD | **+27.0%** |
+| **$1,000 USD** | $10 USD | **+$270 USD** | $1,270 USD | **+27.0%** |
 
 ### Performa Berdasarkan Arah Posisi
 
