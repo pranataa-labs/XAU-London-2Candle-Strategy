@@ -34,7 +34,7 @@
 
 ---
 
-## 1. Parameter Model
+## 1. Parameter Model 
 
 - **Aset**: XAU/USD (Emas / Gold Futures `GC=F`)
 - **Timeframe**: M15 (15 Menit)
