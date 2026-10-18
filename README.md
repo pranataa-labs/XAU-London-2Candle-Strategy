@@ -1,6 +1,18 @@
-# xau-london-2candle-strategy
+# ⚡ XAU/USD London Open 2-Candle Strategy
+### Quantitative Intraday Volatility & Trend-Aligned Model (14.00 & 14.15 WIB)
 
-> **Deskripsi:**  
+<div align="left">
+
+![Asset](https://img.shields.io/badge/Asset-XAU%2FUSD%20(Gold)-ffd700?style=for-the-badge)
+![Timeframe](https://img.shields.io/badge/Timeframe-M15-blue?style=for-the-badge)
+![Win Rate](https://img.shields.io/badge/Win%20Rate-54.8%25-2ca02c?style=for-the-badge)
+![Profit Factor](https://img.shields.io/badge/Profit%20Factor-2.42-success?style=for-the-badge)
+![Risk:Reward](https://img.shields.io/badge/R%3AR-1%3A2.0-orange?style=for-the-badge)
+![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)
+
+</div>
+
+> **Model Overview:**  
 > Model kuantitatif trading harian XAU/USD berbasis rentang acuan 2-candle pembukaan sesi London (14.00 & 14.15 WIB) searah tren Sesi Asia dengan rasio Risk to Reward 1:2.
 
 ---
