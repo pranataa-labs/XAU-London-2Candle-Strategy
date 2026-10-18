@@ -126,4 +126,4 @@ xau-london-2candle-strategy/
    - Tetapkan Stop Loss (SL) dan Take Profit (TP) sesuai angka output program.
 3. **Pukul 22.00 WIB**:
    - Tutup transaksi jika posisi masih berjalan.
-   - Batalkan pending order jika belum tersentuh (*unfilled*).
+   - Batalkan pending order jika belum tersentuh (*unfilled*). 
