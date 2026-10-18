@@ -1,0 +1,140 @@
+"""
+XAU/USD London Open 2-Candle Trend-Aligned Signal Generator
+SOP: Eksekusi 14.25 - 14.30 WIB
+Model: 2-Candle Reference Range (14.00 & 14.15 WIB) Searah Tren Sesi Asia
+"""
+
+import os
+import sys
+import datetime
+import pandas as pd
+import numpy as np
+import yfinance as yf
+
+# UTF-8 stdout
+if sys.stdout.encoding != 'utf-8':
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+
+os.system('')
+
+# ANSI Colors
+GOLD = '\033[38;5;220m'
+GREEN = '\033[1;32m'
+CYAN = '\033[1;36m'
+RED = '\033[1;31m'
+GRAY = '\033[90m'
+WHITE = '\033[1;37m'
+RESET = '\033[0m'
+BOLD = '\033[1m'
+
+def fetch_data():
+    local_cache = "gold_15m_cache.csv"
+    df = None
+    try:
+        df = yf.download("GC=F", period="5d", interval="15m", progress=False)
+        if isinstance(df.columns, pd.MultiIndex):
+            df = df.xs("GC=F", level="Ticker", axis=1)
+        df = df.dropna(subset=['High', 'Low', 'Close', 'Open'])
+    except Exception:
+        df = None
+
+    if df is None or len(df) == 0:
+        if os.path.exists(local_cache):
+            df = pd.read_csv(local_cache, index_col=0, parse_dates=True)
+
+    if df is None or len(df) == 0:
+        return None
+
+    if df.index.tz is None:
+        df.index = df.index.tz_localize("UTC")
+    df.index = df.index.tz_convert("Asia/Jakarta")
+    df = df.dropna(subset=['High', 'Low', 'Close', 'Open'])
+    return df
+
+def generate_signal():
+    df = fetch_data()
+    if df is None:
+        print(f"{RED}[ERROR] Gagal memuat data pasar.{RESET}")
+        return
+
+    now_wib = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7)))
+    today_date = now_wib.date()
+
+    # Cari tanggal sesi perdagangan yang memiliki Sesi Asia
+    dates_with_asia = []
+    for d in sorted(list(set(df.index.date)), reverse=True):
+        bars = df[(df.index.date == d) & (df.index.hour >= 7) & (df.index.hour < 14)]
+        if len(bars) >= 10:
+            dates_with_asia.append(d)
+
+    if not dates_with_asia:
+        print(f"{RED}[ERROR] Data Sesi Asia belum lengkap.{RESET}")
+        return
+
+    # Gunakan hari ini jika ada, atau gunakan sesi perdagangan terakhir
+    if today_date in dates_with_asia:
+        target_date = today_date
+    else:
+        target_date = dates_with_asia[0]
+
+    df_today = df[df.index.date == target_date]
+    asia_bars = df_today[(df_today.index.hour >= 7) & (df_today.index.hour < 14)]
+
+    asia_open = float(asia_bars.iloc[0]['Open'])
+    asia_close = float(asia_bars.iloc[-1]['Close'])
+    asia_delta = asia_close - asia_open
+    is_bull = asia_delta >= 0
+
+    # 2. Candle Acuan 14.00 & 14.15 WIB
+    c1400 = df_today[(df_today.index.hour == 14) & (df_today.index.minute == 0)]
+    c1415 = df_today[(df_today.index.hour == 14) & (df_today.index.minute == 15)]
+
+    if len(c1400) == 0 or len(c1415) == 0:
+        print(f"{GRAY}[*] Menunggu pembentukan candle 14.00 dan 14.15 WIB selesai (pukul 14.30 WIB)...{RESET}")
+        last_price = float(df_today.iloc[-1]['Close'])
+        print(f"Harga Terakhir: ${last_price:.2f} | Delta Asia: {asia_delta:+.2f} USD")
+        return
+
+    h_ref = max(float(c1400['High'].iloc[0]), float(c1415['High'].iloc[0]))
+    l_ref = min(float(c1400['Low'].iloc[0]), float(c1415['Low'].iloc[0]))
+    rng = h_ref - l_ref
+    sl_dist = 0.5 * rng
+
+    if is_bull:
+        order_type = "BUY LIMIT"
+        entry_px = l_ref
+        sl_px = l_ref - sl_dist
+        tp_px = h_ref
+        direction_color = GREEN
+    else:
+        order_type = "SELL LIMIT"
+        entry_px = h_ref
+        sl_px = h_ref + sl_dist
+        tp_px = l_ref
+        direction_color = RED
+
+    current_px = float(df_today.iloc[-1]['Close'])
+
+    print(f"\n{GOLD}======================================================================{RESET}")
+    print(f"{GOLD}        XAU/USD 2-CANDLE LONDON OPEN SIGNAL GENERATOR (M15)           {RESET}")
+    print(f"{GOLD}======================================================================{RESET}")
+    print(f" Tanggal Sesi     : {WHITE}{target_date.strftime('%Y-%m-%d (%A)')}{RESET}")
+    print(f" Delta Sesi Asia  : {direction_color}{asia_delta:+.2f} USD ({'BULLISH' if is_bull else 'BEARISH'}){RESET}")
+    print(f" High Acuan       : {WHITE}${h_ref:.2f}{RESET}")
+    print(f" Low Acuan        : {WHITE}${l_ref:.2f}{RESET}")
+    print(f" Lebar Rentang    : {WHITE}${rng:.2f} USD{RESET}")
+    print(f" Harga Saat Ini   : {WHITE}${current_px:.2f}{RESET}")
+    print(f"{GOLD}----------------------------------------------------------------------{RESET}")
+    print(f" INSTRUKSI ORDER  : {BOLD}{direction_color}{order_type}{RESET}")
+    print(f" LEVEL ENTRY      : {BOLD}{WHITE}${entry_px:.2f}{RESET}")
+    print(f" STOP LOSS (SL)   : {BOLD}{RED}${sl_px:.2f}{RESET}  (Jarak: ${sl_dist:.2f})")
+    print(f" TAKE PROFIT (TP) : {BOLD}{GREEN}${tp_px:.2f}{RESET}  (Target: ${rng:.2f})")
+    print(f" RISK TO REWARD   : {BOLD}{WHITE}1 : 2.0{RESET}")
+    print(f" EXPIRE ORDER     : {GRAY}22.00 WIB (Tutup posisi / Batalkan jika unfilled){RESET}")
+    print(f"{GOLD}======================================================================{RESET}\n")
+
+if __name__ == "__main__":
+    generate_signal()
