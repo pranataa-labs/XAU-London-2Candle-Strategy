@@ -15,6 +15,21 @@
 > **Model Overview:**  
 > Model kuantitatif trading harian XAU/USD berbasis rentang acuan 2-candle pembukaan sesi London (14.00 & 14.15 WIB) searah tren Sesi Asia dengan rasio Risk to Reward 1:2.
 
+### 📊 Ringkasan Kinerja Utama (Key Performance Metrics - 50 Entri)
+
+| Parameter Metrik | Hasil Kuantitatif (50 Sesi) |
+| :--- | :--- |
+| **Total Sesi Diuji** | **50 Hari Perdagangan** |
+| **Order Terpicu (*Fill*)** | **42 Trade** (Rasio eksekusi 84.0%) |
+| **Order Unfilled** | **8 Hari** (16.0%) |
+| **Menang / Kalah** | **23 Win / 19 Loss** |
+| **Win Rate** | **54.8%** (naik ke **60.0%** pada $\Delta Asia \ge \$10$) |
+| **Risk to Reward (R:R)** | **1 : 2.0** (+2.0 R / -1.0 R) |
+| **Net Profit** | **+27.00 R** (Gross Profit: +46.0 R / Loss: -19.0 R) |
+| **Profit Factor (PF)** | **2.42** |
+| **Max Drawdown** | **-4.00 R** |
+| **Waktu Pemasangan Order** | **Pukul 14.30 WIB** |
+
 ---
 
 ## 1. Parameter Model
