@@ -4,7 +4,8 @@ from indie import indicator, color, line_style, plot, param, MutSeriesF
 
 @indicator('XAU London 2-Candle Trend Strategy', overlay_main_pane=True)
 @param.int('tz_offset', default=7, min=-12, max=14, title='Timezone Offset (WIB = 7)')
-@param.float('sl_ratio', default=0.5, min=0.1, max=2.0, title='SL Multiplier (0.5 = 50% Range)')
+@param.float('sl_ratio', default=1.0, min=0.1, max=3.0, title='SL Multiplier (1.0 = 100% Range)')
+@param.float('buffer_usd', default=1.0, min=0.0, max=10.0, title='SL Buffer USD (Peredam Wick/Spread)')
 @param.float('rr_ratio', default=2.0, min=0.5, max=5.0, title='Risk-Reward Ratio (RR 1:2.0)')
 @param.bool('show_ref_box', default=True, title='Show Reference Range (14:00-14:15)')
 @plot.line(title='Entry Level', color=color.YELLOW, line_width=2)
@@ -12,7 +13,7 @@ from indie import indicator, color, line_style, plot, param, MutSeriesF
 @plot.line(title='Take Profit (TP)', color=color.GREEN, line_width=2)
 @plot.line(title='Ref High (14:00-14:15)', color=color.GRAY, line_style=line_style.DASHED, line_width=1)
 @plot.line(title='Ref Low (14:00-14:15)', color=color.GRAY, line_style=line_style.DASHED, line_width=1)
-def Main(self, tz_offset, sl_ratio, rr_ratio, show_ref_box):
+def Main(self, tz_offset, sl_ratio, buffer_usd, rr_ratio, show_ref_box):
     # Inisialisasi mutable state series
     day_s = MutSeriesF.new(0.0)
     asia_open_s = MutSeriesF.new(0.0)
@@ -99,7 +100,9 @@ def Main(self, tz_offset, sl_ratio, rr_ratio, show_ref_box):
         l = l_ref_s[0]
         rng = h - l
         if rng > 0.0:
-            sl_dist = sl_ratio * rng
+            # SL diperlebar: rasio rentang ditambah buffer USD peredam wick
+            sl_dist = (sl_ratio * rng) + buffer_usd
+            # TP diperlebar mengikuti rasio Risk-to-Reward (default RR 1:2.0)
             tp_dist = rr_ratio * sl_dist
 
             if is_bull_s[0] == 1.0:
