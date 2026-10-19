@@ -8,11 +8,11 @@ from indie import indicator, color, line_style, plot, param, MutSeriesF
 @param.float('sl_ratio', default=0.5, min=0.1, max=2.0, title='SL Multiplier (0.5 = 50% Range)')
 @param.float('rr_ratio', default=2.0, min=0.5, max=5.0, title='Risk-Reward Ratio (RR 1:2.0)')
 @param.bool('show_ref_box', default=True, title='Show Reference Range (14:00-14:15)')
-@plot.line('entry_line', title='Entry Level', color=color.hex('#00E5FF'), line_width=2)
-@plot.line('sl_line', title='Stop Loss (SL)', color=color.RED, line_width=2)
-@plot.line('tp_line', title='Take Profit (TP)', color=color.GREEN, line_width=2)
-@plot.line('ref_high', title='Ref High (14:00-14:15)', color=color.GRAY, line_style=line_style.DASHED, line_width=1)
-@plot.line('ref_low', title='Ref Low (14:00-14:15)', color=color.GRAY, line_style=line_style.DASHED, line_width=1)
+@plot.line(title='Entry Level', color=color.YELLOW, line_width=2)
+@plot.line(title='Stop Loss (SL)', color=color.RED, line_width=2)
+@plot.line(title='Take Profit (TP)', color=color.GREEN, line_width=2)
+@plot.line(title='Ref High (14:00-14:15)', color=color.GRAY, line_style=line_style.DASHED, line_width=1)
+@plot.line(title='Ref Low (14:00-14:15)', color=color.GRAY, line_style=line_style.DASHED, line_width=1)
 def Main(self, tz_offset, sl_ratio, rr_ratio, show_ref_box):
     # Inisialisasi mutable state series
     day_s = MutSeriesF.new(0.0)
@@ -39,7 +39,7 @@ def Main(self, tz_offset, sl_ratio, rr_ratio, show_ref_box):
         l_ref_s[0] = 0.0
         ready_s[0] = 0.0
     else:
-        # Reset jika berganti hari kalender
+        # Reset otomatis setiap pergantian hari perdagangan
         if date_key != day_s[1]:
             day_s[0] = date_key
             asia_open_s[0] = 0.0
@@ -58,7 +58,7 @@ def Main(self, tz_offset, sl_ratio, rr_ratio, show_ref_box):
             ready_s[0] = ready_s[1]
 
     # 1. Sesi Asia (07:00 s/d 13:59 WIB)
-    if 7 <= hour < 14:
+    if hour >= 7 and hour < 14:
         if asia_open_s[0] == 0.0:
             asia_open_s[0] = self.open[0]
         asia_close_s[0] = self.close[0]
@@ -76,16 +76,16 @@ def Main(self, tz_offset, sl_ratio, rr_ratio, show_ref_box):
             if self.low[0] < l_ref_s[0]:
                 l_ref_s[0] = self.low[0]
 
-    # 3. Kunci status kesiapan sinyal mulai 14:30 WIB
-    if (hour == 14 and minute >= 30) or (15 <= hour < 22):
+    # 3. Kunci status kesiapan eksekusi mulai 14:30 WIB
+    if (hour == 14 and minute >= 30) or (hour >= 15 and hour < 22):
         if h_ref_s[0] > 0.0 and l_ref_s[0] > 0.0:
             ready_s[0] = 1.0
 
-    # Status jendela waktu
-    in_trade_window = (ready_s[0] == 1.0) and ((hour == 14 and minute >= 30) or (15 <= hour < 22))
+    # Penentuan jendela aktif perdagangan (14:30 - 22:00 WIB)
+    in_trade_window = (ready_s[0] == 1.0) and ((hour == 14 and minute >= 30) or (hour >= 15 and hour < 22))
     in_ref_formation = (hour == 14 and minute < 30) and (h_ref_s[0] > 0.0)
 
-    # Perhitungan level order
+    # Inisialisasi level harga
     entry_val = nan
     sl_val = nan
     tp_val = nan
@@ -101,12 +101,12 @@ def Main(self, tz_offset, sl_ratio, rr_ratio, show_ref_box):
             tp_dist = rr_ratio * sl_dist
 
             if is_bull_s[0] == 1.0:
-                # Setup BUY LIMIT (Searah Tren Naik Asia)
+                # Sesi Asia Naik -> BUY LIMIT di Low Acuan
                 entry_val = l
                 sl_val = l - sl_dist
                 tp_val = l + tp_dist
             else:
-                # Setup SELL LIMIT (Searah Tren Turun Asia)
+                # Sesi Asia Turun -> SELL LIMIT di High Acuan
                 entry_val = h
                 sl_val = h + sl_dist
                 tp_val = h - tp_dist
@@ -118,10 +118,4 @@ def Main(self, tz_offset, sl_ratio, rr_ratio, show_ref_box):
         ref_h_val = h_ref_s[0]
         ref_l_val = l_ref_s[0]
 
-    return (
-        plot.Line(entry_val),
-        plot.Line(sl_val),
-        plot.Line(tp_val),
-        plot.Line(ref_h_val),
-        plot.Line(ref_l_val),
-    )
+    return entry_val, sl_val, tp_val, ref_h_val, ref_l_val
