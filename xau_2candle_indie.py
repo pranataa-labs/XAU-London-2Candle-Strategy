@@ -2,7 +2,7 @@
 from math import nan
 from indie import indicator, color, line_style, plot, param, MutSeriesF
 
-@indicator('XAU London 2-Candle Trend Strategy', overlay_main_pane=True)
+@indicator('XAU London 2-Candle Strategy (Pure London)', overlay_main_pane=True)
 @param.int('tz_offset', default=7, min=-12, max=14, title='Timezone Offset (WIB = 7)')
 @param.float('sl_ratio', default=1.0, min=0.1, max=3.0, title='SL Multiplier (1.0 = 100% Range)')
 @param.float('buffer_usd', default=1.0, min=0.0, max=10.0, title='SL Buffer USD (Peredam Wick/Spread)')
@@ -16,8 +16,8 @@ from indie import indicator, color, line_style, plot, param, MutSeriesF
 def Main(self, tz_offset, sl_ratio, buffer_usd, rr_ratio, show_ref_box):
     # Inisialisasi mutable state series
     day_s = MutSeriesF.new(0.0)
-    asia_open_s = MutSeriesF.new(0.0)
-    asia_close_s = MutSeriesF.new(0.0)
+    c_open_s = MutSeriesF.new(0.0)
+    c_close_s = MutSeriesF.new(0.0)
     is_bull_s = MutSeriesF.new(1.0)
     h_ref_s = MutSeriesF.new(0.0)
     l_ref_s = MutSeriesF.new(0.0)
@@ -35,8 +35,8 @@ def Main(self, tz_offset, sl_ratio, buffer_usd, rr_ratio, show_ref_box):
     # Penanganan bar pertama vs bar kelanjutan
     if self.bar_index == 0:
         day_s[0] = date_key
-        asia_open_s[0] = 0.0
-        asia_close_s[0] = 0.0
+        c_open_s[0] = 0.0
+        c_close_s[0] = 0.0
         is_bull_s[0] = 1.0
         h_ref_s[0] = 0.0
         l_ref_s[0] = 0.0
@@ -45,32 +45,26 @@ def Main(self, tz_offset, sl_ratio, buffer_usd, rr_ratio, show_ref_box):
         # Reset otomatis setiap pergantian hari kalender
         if date_key != day_s[1]:
             day_s[0] = date_key
-            asia_open_s[0] = 0.0
-            asia_close_s[0] = 0.0
+            c_open_s[0] = 0.0
+            c_close_s[0] = 0.0
             is_bull_s[0] = 1.0
             h_ref_s[0] = 0.0
             l_ref_s[0] = 0.0
             ready_s[0] = 0.0
         else:
             day_s[0] = day_s[1]
-            asia_open_s[0] = asia_open_s[1]
-            asia_close_s[0] = asia_close_s[1]
+            c_open_s[0] = c_open_s[1]
+            c_close_s[0] = c_close_s[1]
             is_bull_s[0] = is_bull_s[1]
             h_ref_s[0] = h_ref_s[1]
             l_ref_s[0] = l_ref_s[1]
             ready_s[0] = ready_s[1]
 
-    # 1. Sesi Asia (07:00 s/d 13:59 WIB)
-    if hour >= 7 and hour < 14:
-        if asia_open_s[0] == 0.0:
-            asia_open_s[0] = self.open[0]
-        asia_close_s[0] = self.close[0]
-        delta_asia = asia_close_s[0] - asia_open_s[0]
-        is_bull_s[0] = 1.0 if delta_asia >= 0.0 else 0.0
-
-    # 2. Pembentukan Rentang Acuan London 2-Candle (14:00 & 14:15 WIB pada M15)
+    # 1. Pembentukan Rentang Acuan London 2-Candle (14:00 & 14:15 WIB pada M15)
+    # Murni membaca pergerakan lilin tepat sebelum pembukaan sesi London
     if hour == 14 and minute < 30:
         if h_ref_s[0] == 0.0:
+            c_open_s[0] = self.open[0]
             h_ref_s[0] = self.high[0]
             l_ref_s[0] = self.low[0]
         else:
@@ -79,7 +73,11 @@ def Main(self, tz_offset, sl_ratio, buffer_usd, rr_ratio, show_ref_box):
             if self.low[0] < l_ref_s[0]:
                 l_ref_s[0] = self.low[0]
 
-    # 3. Kunci status kesiapan eksekusi mulai 14:30 WIB
+        c_close_s[0] = self.close[0]
+        # Arah tren ditentukan langsung dari pergerakan 2 candle acuan tersebut
+        is_bull_s[0] = 1.0 if c_close_s[0] >= c_open_s[0] else 0.0
+
+    # 2. Kunci status kesiapan eksekusi mulai 14:30 WIB
     if (hour == 14 and minute >= 30) or (hour >= 15 and hour < 22):
         if h_ref_s[0] > 0.0 and l_ref_s[0] > 0.0:
             ready_s[0] = 1.0
@@ -100,18 +98,16 @@ def Main(self, tz_offset, sl_ratio, buffer_usd, rr_ratio, show_ref_box):
         l = l_ref_s[0]
         rng = h - l
         if rng > 0.0:
-            # SL diperlebar: rasio rentang ditambah buffer USD peredam wick
             sl_dist = (sl_ratio * rng) + buffer_usd
-            # TP diperlebar mengikuti rasio Risk-to-Reward (default RR 1:2.0)
             tp_dist = rr_ratio * sl_dist
 
             if is_bull_s[0] == 1.0:
-                # Sesi Asia Naik -> BUY LIMIT di Low Acuan
+                # 2 Candle Acuan Naik -> BUY LIMIT di Low Acuan
                 entry_val = l
                 sl_val = l - sl_dist
                 tp_val = l + tp_dist
             else:
-                # Sesi Asia Turun -> SELL LIMIT di High Acuan
+                # 2 Candle Acuan Turun -> SELL LIMIT di High Acuan
                 entry_val = h
                 sl_val = h + sl_dist
                 tp_val = h - tp_dist

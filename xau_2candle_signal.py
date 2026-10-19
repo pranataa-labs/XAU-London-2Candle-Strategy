@@ -75,28 +75,31 @@ def generate_signal():
         return
 
     # Gunakan hari ini jika ada, atau gunakan sesi perdagangan terakhir
-    if today_date in dates_with_asia:
-        target_date = today_date
-    else:
-        target_date = dates_with_asia[0]
+    dates_with_london = []
+    for d in sorted(list(set(df.index.date)), reverse=True):
+        bars = df[(df.index.date == d) & (df.index.hour == 14)]
+        if len(bars) >= 2:
+            dates_with_london.append(d)
 
+    if not dates_with_london:
+        print(f"{RED}[ERROR] Data lilin sesi London belum tersedia.{RESET}")
+        return
+
+    target_date = today_date if today_date in dates_with_london else dates_with_london[0]
     df_today = df[df.index.date == target_date]
-    asia_bars = df_today[(df_today.index.hour >= 7) & (df_today.index.hour < 14)]
 
-    asia_open = float(asia_bars.iloc[0]['Open'])
-    asia_close = float(asia_bars.iloc[-1]['Close'])
-    asia_delta = asia_close - asia_open
-    is_bull = asia_delta >= 0
-
-    # 2. Candle Acuan 14.00 & 14.15 WIB
+    # Lilin Acuan 14.00 & 14.15 WIB
     c1400 = df_today[(df_today.index.hour == 14) & (df_today.index.minute == 0)]
     c1415 = df_today[(df_today.index.hour == 14) & (df_today.index.minute == 15)]
 
     if len(c1400) == 0 or len(c1415) == 0:
         print(f"{GRAY}[*] Menunggu pembentukan candle 14.00 dan 14.15 WIB selesai (pukul 14.30 WIB)...{RESET}")
-        last_price = float(df_today.iloc[-1]['Close'])
-        print(f"Harga Terakhir: ${last_price:.2f} | Delta Asia: {asia_delta:+.2f} USD")
         return
+
+    c_open = float(c1400['Open'].iloc[0])
+    c_close = float(c1415['Close'].iloc[0])
+    london_delta = c_close - c_open
+    is_bull = london_delta >= 0
 
     h_ref = max(float(c1400['High'].iloc[0]), float(c1415['High'].iloc[0]))
     l_ref = min(float(c1400['Low'].iloc[0]), float(c1415['Low'].iloc[0]))
@@ -129,7 +132,7 @@ def generate_signal():
     print(f"{GOLD}        XAU/USD 2-CANDLE LONDON OPEN SIGNAL GENERATOR (M15)           {RESET}")
     print(f"{GOLD}======================================================================{RESET}")
     print(f" Tanggal Sesi     : {WHITE}{target_date.strftime('%Y-%m-%d (%A)')}{RESET}")
-    print(f" Delta Sesi Asia  : {direction_color}{asia_delta:+.2f} USD ({'BULLISH' if is_bull else 'BEARISH'}){RESET}")
+    print(f" Delta 2-Lilin    : {direction_color}{london_delta:+.2f} USD ({'BULLISH' if is_bull else 'BEARISH'}){RESET}")
     print(f" High Acuan       : {WHITE}${h_ref:.2f}{RESET}")
     print(f" Low Acuan        : {WHITE}${l_ref:.2f}{RESET}")
     print(f" Lebar Rentang    : {WHITE}${rng:.2f} USD{RESET}")
