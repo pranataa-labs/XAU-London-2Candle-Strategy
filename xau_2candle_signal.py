@@ -101,19 +101,26 @@ def generate_signal():
     h_ref = max(float(c1400['High'].iloc[0]), float(c1415['High'].iloc[0]))
     l_ref = min(float(c1400['Low'].iloc[0]), float(c1415['Low'].iloc[0]))
     rng = h_ref - l_ref
-    sl_dist = 0.5 * rng
+    
+    # 1. Setup Lebar (Wide - Default Anti-Wick Hunt): SL = 1.0 * Range + 1.0 USD Buffer
+    sl_dist_wide = (1.0 * rng) + 1.0
+    tp_dist_wide = 2.0 * sl_dist_wide
+
+    # 2. Setup Ketat (Tight): SL = 0.5 * Range
+    sl_dist_tight = 0.5 * rng
+    tp_dist_tight = 1.0 * rng
 
     if is_bull:
         order_type = "BUY LIMIT"
         entry_px = l_ref
-        sl_px = l_ref - sl_dist
-        tp_px = h_ref
+        sl_px = l_ref - sl_dist_wide
+        tp_px = l_ref + tp_dist_wide
         direction_color = GREEN
     else:
         order_type = "SELL LIMIT"
         entry_px = h_ref
-        sl_px = h_ref + sl_dist
-        tp_px = l_ref
+        sl_px = h_ref + sl_dist_wide
+        tp_px = h_ref - tp_dist_wide
         direction_color = RED
 
     current_px = float(df_today.iloc[-1]['Close'])
@@ -130,10 +137,12 @@ def generate_signal():
     print(f"{GOLD}----------------------------------------------------------------------{RESET}")
     print(f" INSTRUKSI ORDER  : {BOLD}{direction_color}{order_type}{RESET}")
     print(f" LEVEL ENTRY      : {BOLD}{WHITE}${entry_px:.2f}{RESET}")
-    print(f" STOP LOSS (SL)   : {BOLD}{RED}${sl_px:.2f}{RESET}  (Jarak: ${sl_dist:.2f})")
-    print(f" TAKE PROFIT (TP) : {BOLD}{GREEN}${tp_px:.2f}{RESET}  (Target: ${rng:.2f})")
+    print(f" STOP LOSS (SL)   : {BOLD}{RED}${sl_px:.2f}{RESET}  (Jarak: ${sl_dist_wide:.2f} | 1.0x Range + $1 Buffer)")
+    print(f" TAKE PROFIT (TP) : {BOLD}{GREEN}${tp_px:.2f}{RESET}  (Target: ${tp_dist_wide:.2f} | RR 1:2.0)")
     print(f" RISK TO REWARD   : {BOLD}{WHITE}1 : 2.0{RESET}")
     print(f" EXPIRE ORDER     : {GRAY}22.00 WIB (Tutup posisi / Batalkan jika unfilled){RESET}")
+    print(f"{GOLD}----------------------------------------------------------------------{RESET}")
+    print(f" {GRAY}Opsi Ketat (0.5x Range): SL = ${l_ref - sl_dist_tight if is_bull else h_ref + sl_dist_tight:.2f} | TP = ${l_ref + tp_dist_tight if is_bull else h_ref - tp_dist_tight:.2f}{RESET}")
     print(f"{GOLD}======================================================================{RESET}\n")
 
 if __name__ == "__main__":
