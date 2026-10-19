@@ -1,5 +1,4 @@
 # indie:lang_version = 5
-from datetime import timedelta
 from math import nan
 from indie import indicator, color, line_style, plot, param, MutSeriesF
 
@@ -23,11 +22,14 @@ def Main(self, tz_offset, sl_ratio, rr_ratio, show_ref_box):
     l_ref_s = MutSeriesF.new(0.0)
     ready_s = MutSeriesF.new(0.0)
 
-    # Waktu lokal lilin saat ini
-    t = self.time[0] + timedelta(hours=tz_offset)
-    date_key = float(t.year * 10000 + t.month * 100 + t.day)
-    hour = t.hour
-    minute = t.minute
+    # Konversi timestamp POSIX (float) ke waktu lokal
+    raw_time = self.time[0]
+    sec = (raw_time / 1000.0) if raw_time > 10000000000.0 else raw_time
+    local_sec = int(sec + tz_offset * 3600.0)
+    date_key = float(int(local_sec / 86400))
+    sec_in_day = local_sec - int(date_key) * 86400
+    hour = int(sec_in_day / 3600)
+    minute = int((sec_in_day - hour * 3600) / 60)
 
     # Penanganan bar pertama vs bar kelanjutan
     if self.bar_index == 0:
@@ -39,7 +41,7 @@ def Main(self, tz_offset, sl_ratio, rr_ratio, show_ref_box):
         l_ref_s[0] = 0.0
         ready_s[0] = 0.0
     else:
-        # Reset otomatis setiap pergantian hari perdagangan
+        # Reset otomatis setiap pergantian hari kalender
         if date_key != day_s[1]:
             day_s[0] = date_key
             asia_open_s[0] = 0.0
