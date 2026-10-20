@@ -20,9 +20,7 @@ from indie import indicator, color, line_style, plot, param, MutSeriesF
 @plot.line(title='Ref High (14:00-14:15)', color=color.GRAY, line_style=line_style.DASHED, line_width=1)
 @plot.line(title='Ref Low (14:00-14:15)', color=color.GRAY, line_style=line_style.DASHED, line_width=1)
 # --- Plot Latar Belakang Sesi ---
-@plot.background(title='Tokyo (Asia) Session', color=color.YELLOW(0.06))
-@plot.background(title='London Session', color=color.BLUE(0.08))
-@plot.background(title='New York Session', color=color.RED(0.08))
+@plot.background(title='Session Highlight')
 def Main(self, tz_offset, sl_ratio, buffer_usd, rr_ratio, show_ref_box, show_tokyo, show_london, show_ny):
     # Inisialisasi mutable state series strategi
     day_s = MutSeriesF.new(0.0)
@@ -47,17 +45,26 @@ def Main(self, tz_offset, sl_ratio, buffer_usd, rr_ratio, show_ref_box, show_tok
     # 1. LOGIKA SESI TRADING
     # ==========================================
     # Tokyo: 07:00 - 14:30 WIB (420 - 870 menit)
-    in_tokyo = (cur_m >= 420 and cur_m < 870)
+    in_tokyo = (show_tokyo and (cur_m >= 420 and cur_m < 870))
 
     # London: 14:30 - 22:30 WIB (870 - 1350 menit)
-    in_london = (cur_m >= 870 and cur_m < 1350)
+    in_london = (show_london and (cur_m >= 870 and cur_m < 1350))
 
     # New York: 20:30 - 03:00 WIB (1230 menit s/d 180 menit hari berikutnya)
-    in_ny = (cur_m >= 1230 or cur_m < 180)
+    in_ny = (show_ny and (cur_m >= 1230 or cur_m < 180))
 
-    bg_tokyo = plot.Background(color=color.YELLOW(0.06)) if (show_tokyo and in_tokyo) else plot.Background()
-    bg_london = plot.Background(color=color.BLUE(0.08)) if (show_london and in_london) else plot.Background()
-    bg_ny = plot.Background(color=color.RED(0.08)) if (show_ny and in_ny) else plot.Background()
+    if in_london and in_ny:
+        bg = color.PURPLE(0.14)
+    elif in_ny:
+        bg = color.RED(0.12)
+    elif in_london:
+        bg = color.BLUE(0.12)
+    elif in_tokyo:
+        bg = color.YELLOW(0.10)
+    else:
+        bg = color.TRANSPARENT
+
+    bg_session = plot.Background(color=bg)
 
     # ==========================================
     # 2. LOGIKA STRATEGI 2-CANDLE LONDON
@@ -144,4 +151,4 @@ def Main(self, tz_offset, sl_ratio, buffer_usd, rr_ratio, show_ref_box, show_tok
         ref_h_val = h_ref_s[0]
         ref_l_val = l_ref_s[0]
 
-    return entry_val, sl_val, tp_val, ref_h_val, ref_l_val, bg_tokyo, bg_london, bg_ny
+    return entry_val, sl_val, tp_val, ref_h_val, ref_l_val, bg_session
