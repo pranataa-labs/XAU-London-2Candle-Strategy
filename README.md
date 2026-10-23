@@ -1,5 +1,6 @@
-# ⚡ XAU/USD London Open 2-Candle Strategy
-### Quantitative Intraday Volatility & Trend-Aligned Model (14.00 & 14.15 WIB)
+# ⚡ XAU/USD London Open 2-Candle Quantitative Strategy
+
+### Quantitative Intraday Volatility & Trend-Aligned Trading Model (14:00 & 14:15 WIB / 07:00 & 07:15 UTC)
 
 <div align="left">
 
@@ -14,116 +15,107 @@
 </div>
 
 > **Model Overview:**  
-> Model kuantitatif trading harian XAU/USD berbasis rentang acuan 2-candle pembukaan sesi London (14.00 & 14.15 WIB) searah tren Sesi Asia dengan rasio Risk to Reward 1:2.
+> Quantitative intraday trading strategy for Gold (XAU/USD) capturing London session opening volatility utilizing a 2-candle M15 reference range aligned with Asian session directional momentum with an asymmetric 1:2.0 Risk-Reward payoff.
 
-### 📊 Ringkasan Kinerja Utama (Key Performance Metrics - 50 Entri)
+---
 
-| Parameter Metrik | Hasil Kuantitatif (50 Sesi) |
+## 📊 Key Quantitative Performance Metrics (50 Test Sessions)
+
+| Performance Metric | Empirical Result (50 Sessions) |
 | :--- | :--- |
-| **Total Sesi Diuji** | **50 Hari Perdagangan** |
-| **Order Terpicu (*Fill*)** | **42 Trade** (Rasio eksekusi 84.0%) |
-| **Order Unfilled** | **8 Hari** (16.0%) |
-| **Menang / Kalah** | **23 Win / 19 Loss** |
-| **Win Rate** | **54.8%** (naik ke **60.0%** pada $\Delta Asia \ge \$10$) |
-| **Risk to Reward (R:R)** | **1 : 2.0** (+2.0 R / -1.0 R) |
-| **Total Keuntungan Bersih (Net Profit)** | **+27.00 R** (**+1.684 Pips** / +168.40 USD poin) |
-| **Gross Profit / Loss** | **+46.00 R** (+2.671 Pips) / **-19.00 R** (-987 Pips) |
+| **Total Evaluated Sessions** | **50 Trading Days** |
+| **Triggered Orders (Fill Rate)** | **42 Executed Trades** (84.0% Execution Rate) |
+| **Unfilled Limit Orders** | **8 Days** (16.0%) |
+| **Win / Loss Distribution** | **23 Wins / 19 Losses** |
+| **Win Rate** | **54.8%** (Expands to **60.0%** at $\Delta Asia \ge \$10$) |
+| **Risk-to-Reward Ratio (R:R)** | **1 : 2.0** (+2.0 R / -1.0 R) |
+| **Net Accumulated Profit** | **+27.00 R** (**+1,684 Pips** / +168.40 USD points) |
+| **Gross Profit / Loss** | **+46.00 R** (+2,671 Pips) / **-19.00 R** (-987 Pips) |
 | **Profit Factor (PF)** | **2.42** |
-| **Max Drawdown** | **-4.00 R** |
-| **Waktu Pemasangan Order** | **Pukul 14.30 WIB** |
+| **Maximum Strategy Drawdown** | **-4.00 R** |
+| **Order Placement Timestamp** | **14:30 WIB (07:30 UTC)** |
 
 ---
 
-## 1. Parameter Model 
+## 📐 Mathematical Model & Execution Rules
 
-- **Aset**: XAU/USD (Emas / Gold Futures `GC=F`)
-- **Timeframe**: M15 (15 Menit)
-- **Candle Acuan**:
-  - Candle 1: 14.00 – 14.15 WIB
-  - Candle 2: 14.15 – 14.30 WIB
-- **Batas Rentang**:
-  - $High_{ref} = \max(High_{14.00}, High_{14.15})$
-  - $Low_{ref} = \min(Low_{14.00}, Low_{14.15})$
+- **Underlying Asset:** XAU/USD (Spot Gold / Comex Gold Futures `GC=F`)
+- **Execution Timeframe:** M15 (15-Minute Candlesticks)
+- **Reference Range Formation:**
+  - Candle 1: 14:00 – 14:15 WIB (07:00 – 07:15 UTC)
+  - Candle 2: 14:15 – 14:30 WIB (07:15 – 07:30 UTC)
+- **Boundary Formulation:**
+  - $High_{ref} = \max(High_{14:00}, High_{14:15})$
+  - $Low_{ref} = \min(Low_{14:00}, Low_{14:15})$
   - $Range = High_{ref} - Low_{ref}$
-- **Filter Tren Sesi Asia (07.00 – 14.00 WIB)**:
-  - $\Delta Asia = Close_{13.45} - Open_{07.00}$
-  - $\Delta Asia \ge 0 \rightarrow$ Bullish $\rightarrow$ Pasang **BUY LIMIT** di $Low_{ref}$
-  - $\Delta Asia < 0 \rightarrow$ Bearish $\rightarrow$ Pasang **SELL LIMIT** di $High_{ref}$
-- **Manajemen Risiko**:
+- **Asian Session Trend Filter (07:00 – 14:00 WIB):**
+  - $\Delta Asia = Close_{13:45} - Open_{07:00}$
+  - $\Delta Asia \ge 0 \rightarrow$ Bullish Bias $\rightarrow$ Place **BUY LIMIT** at $Low_{ref}$
+  - $\Delta Asia < 0 \rightarrow$ Bearish Bias $\rightarrow$ Place **SELL LIMIT** at $High_{ref}$
+- **Asymmetric Risk Management:**
   - Stop Loss (SL) = 0.5 × Range
-  - Take Profit (TP) = 1.0 × Range (Batas sebaliknya)
-  - Risk to Reward = 1 : 2.0 (Win = +2.0 R, Loss = -1.0 R)
-- **Masa Berlaku Order**:
-  - Pemasangan: Pukul 14.30 WIB
-  - Penutupan: Pukul 22.00 WIB (Tutup posisi aktif di harga pasar, batalkan order jika belum terpicu)
+  - Take Profit (TP) = 1.0 × Range (Opposing boundary)
+  - Payoff Structure = 1 : 2.0 (Win = +2.0 R, Loss = -1.0 R)
+- **Order Expiration & Life Cycle:**
+  - Order Submission: 14:30 WIB (07:30 UTC)
+  - Daily Settlement: 22:00 WIB (15:00 UTC) (Liquidate open market exposures, cancel unfilled pending limits)
 
 ---
 
-## 2. Hasil Backtest Kuantitatif (50 Entri)
+## 🔬 Empirical Backtest Results & Subgroup Analytics
 
-Evaluasi pada 50 sesi perdagangan data historis M15:
+### Capital Growth Projections (1% Fixed Risk Per Trade)
 
-| Parameter Metrik | Hasil Backtest |
-| :--- | :--- |
-| **Total Sesi Diuji** | 50 Hari Perdagangan |
-| **Order Terpicu (*Fill*)** | 42 Trade (Rasio eksekusi 84.0%) |
-| **Order Unfilled** | 8 Hari (16.0%) |
-| **Menang / Kalah** | 23 Win / 19 Loss |
-| **Win Rate** | **54.8%** |
-| **Risk to Reward** | **1 : 2.0** (+2.0 R / -1.0 R) |
-| **Total Keuntungan Bersih (Net Profit)** | **+27.00 R** (**+1.684 Pips** / +168.40 USD poin) |
-| **Gross Profit** | **+46.00 R** (+2.671 Pips / +267.10 USD) |
-| **Gross Loss** | **-19.00 R** (-987 Pips / -98.70 USD) |
-| **Profit Factor** | **2.42** |
-| **Max Drawdown** | **-4.00 R** |
-
-### Proyeksi Pertumbuhan Modal (Risiko 1% per Trade)
-
-| Modal Awal Akun | Risiko per Trade (1%) | Akumulasi Laba Bersih (+27.00 R) | Saldo Akhir | Pertumbuhan (ROI) |
+| Starting Account Balance | Risk Allocation (1%) | Net Accumulated Profit (+27.00 R) | Ending Equity | Return On Investment (ROI) |
 | :---: | :---: | :---: | :---: | :---: |
 | **$10,000 USD** | $100 USD | **+$2,700 USD** | $12,700 USD | **+27.0%** |
 | **$5,000 USD** | $50 USD | **+$1,350 USD** | $6,350 USD | **+27.0%** |
 | **$1,000 USD** | $10 USD | **+$270 USD** | $1,270 USD | **+27.0%** |
 
-### Performa Berdasarkan Arah Posisi
+### Directional Performance Breakdown
 
-| Posisi | Kondisi Asia | Total Sesi | Terpicu | Win / Loss | Win Rate | Net PnL | Profit Factor |
+| Direction | Asian Session Bias | Total Sessions | Fills | Win / Loss | Win Rate | Net PnL | Profit Factor |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
 | **BUY** | Bullish ($\Delta \ge 0$) | 28 | 23 | 13 W / 10 L | 56.5% | **+16.00 R** | 2.60 |
 | **SELL** | Bearish ($\Delta < 0$) | 22 | 19 | 10 W / 9 L | 52.6% | **+11.00 R** | 2.22 |
 
-### Filter Kekuatan Pergerakan Asia ($\Delta Asia$)
+### Momentum Threshold Sensitivity ($\Delta Asia$)
 
-| Ambang Batas Delta Asia | Total Trade | Win / Loss | Win Rate | Net PnL | Profit Factor |
+| Asian Delta Threshold | Total Trades | Win / Loss | Win Rate | Net PnL | Profit Factor |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| **Semua ($\Delta \ge \$0$)** | 42 | 23 W / 19 L | 54.8% | +27.00 R | 2.42 |
-| **$\Delta \ge \$5$** | 38 | 22 W / 16 L | 57.9% | +28.00 R | 2.75 |
-| **$\Delta \ge \$10$** | 35 | 21 W / 14 L | **60.0%** | **+28.00 R** | **3.00** |
+| **All Baseline Trades ($\Delta \ge \$0$)** | 42 | 23 W / 19 L | 54.8% | +27.00 R | 2.42 |
+| **Moderate Momentum ($\Delta \ge \$5$)** | 38 | 22 W / 16 L | 57.9% | +28.00 R | 2.75 |
+| **Strong Momentum ($\Delta \ge \$10$)** | 35 | 21 W / 14 L | **60.0%** | **+28.00 R** | **3.00** |
 
 ---
 
-## 3. Struktur Berkas Repositori
+## 📁 Repository Directory Structure
 
 ```text
-xau-london-2candle-strategy/
-├── analisis_strategi_2candle_1400_1415.ipynb  # Notebook analisis komprehensif & grafik
-├── xau_2candle_signal.py                      # Skrip CLI kalkulator sinyal harian
-├── run_signal.bat                             # Peluncur 1-klik Windows
-├── gold_15m_cache.csv                         # Data cache lokal M15
-├── README.md                                  # Dokumentasi model
-└── .gitignore                                 # Konfigurasi filter git
+XAU-London-2Candle-Strategy/
+├── analisis_strategi_2candle_1400_1415.ipynb  # Comprehensive analytical notebook & equity plots
+├── xau_2candle_signal.py                      # Production daily signal CLI calculator
+├── run_signal.bat                             # One-click Windows runner
+├── gold_15m_cache.csv                         # Local cached M15 historical pricing
+└── README.md                                  # Strategy specification & model documentation
 ```
 
 ---
 
-## 4. Panduan Eksekusi Harian (SOP)
+## 🛠️ Daily Standard Operating Procedure (SOP)
 
-1. **Pukul 14.25 WIB**:
-   - Jalankan `run_signal.bat` atau `python xau_2candle_signal.py`.
-   - Program menghitung $\Delta Asia$ dan menentukan jenis order (BUY LIMIT atau SELL LIMIT).
-2. **Pukul 14.30 WIB**:
-   - Pasang Limit Order pada level harga yang ditampilkan terminal.
-   - Tetapkan Stop Loss (SL) dan Take Profit (TP) sesuai angka output program.
-3. **Pukul 22.00 WIB**:
-   - Tutup transaksi jika posisi masih berjalan.
-   - Batalkan pending order jika belum tersentuh (*unfilled*). 
+1. **At 14:25 WIB (07:25 UTC):**
+   - Execute `run_signal.bat` or `python xau_2candle_signal.py`.
+   - Algorithm calculates $\Delta Asia$ and outputs appropriate order specification (BUY LIMIT or SELL LIMIT).
+2. **At 14:30 WIB (07:30 UTC):**
+   - Place designated Limit Order at displayed price level.
+   - Set Stop Loss and Take Profit levels exactly matching algorithm parameters.
+3. **At 22:00 WIB (15:00 UTC):**
+   - Close active market exposures.
+   - Cancel unfilled pending limit orders.
+
+---
+
+<p align="center">
+  Engineered by <b><a href="https://github.com/pranataa-labs">pranataa-labs</a></b>
+</p>
